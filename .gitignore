@@ -1,6 +1,16 @@
+# Secrets — NEVER commit
 .env
-.env.*
-!.env.example
-node_modules/
+.env.local
+.env.*.local
+
+# Agent runtime data (encrypted config, logs)
+.agent-data/
+logs/
+
+# Build output
 dist/
+node_modules/
+
+# OS
 .DS_Store
+Thumbs.db

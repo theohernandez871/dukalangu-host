@@ -46,15 +46,25 @@ export function normalizeUrl(raw: string): string {
   }
 }
 
+// Read an env var by its canonical (backend) name, but also accept the VITE_
+// prefixed name as a fallback. VITE_ vars belong to the frontend, not a Node
+// agent — but people often copy a frontend .env by mistake, so we tolerate both
+// to avoid a confusing "not configured" error. The canonical name wins.
+function readEnv(name: string): string | undefined {
+  return process.env[name] ?? process.env[`VITE_${name}`];
+}
+
 export function loadConfig(): AgentConfig {
   const empty: AgentConfig = { supabaseUrl: '', supabaseAnonKey: '', agentToken: '', configured: false };
   if (!existsSync(CONFIG_FILE)) {
     // Fall back to env (dev / first run) if present.
-    if (process.env.SUPABASE_URL && process.env.AGENT_TOKEN) {
+    const url = readEnv('SUPABASE_URL');
+    const token = readEnv('AGENT_TOKEN');
+    if (url && token) {
       return {
-        supabaseUrl: normalizeUrl(process.env.SUPABASE_URL),
-        supabaseAnonKey: process.env.SUPABASE_ANON_KEY ?? '',
-        agentToken: process.env.AGENT_TOKEN,
+        supabaseUrl: normalizeUrl(url),
+        supabaseAnonKey: readEnv('SUPABASE_ANON_KEY') ?? '',
+        agentToken: token,
         configured: true,
       };
     }

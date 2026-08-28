@@ -9,9 +9,14 @@ import { Orchestrator } from './core/orchestrator.js';
 
 async function main(): Promise<void> {
   if (!isConfigured()) {
+    const has = (n: string) => Boolean(process.env[n] ?? process.env[`VITE_${n}`]);
     console.error(
-      '\n[agent] Agent haijasanidiwa. Weka SUPABASE_URL, SUPABASE_ANON_KEY, AGENT_TOKEN ' +
-        '(kupitia setup au .env), kisha anzisha tena.\n',
+      '\n[agent] Agent haijasanidiwa. Faili .env inahitaji majina HAYA (bila VITE_):\n' +
+        `  SUPABASE_URL       ${has('SUPABASE_URL') ? '✓' : '✗ haipo'}\n` +
+        `  SUPABASE_ANON_KEY  ${has('SUPABASE_ANON_KEY') ? '✓' : '✗ haipo'}\n` +
+        `  AGENT_TOKEN        ${has('AGENT_TOKEN') ? '✓' : '✗ haipo'}\n` +
+        '\nKumbuka: VITE_ ni kwa frontend tu. Agent hutumia majina bila VITE_.\n' +
+        '(Ukiweka VITE_SUPABASE_URL, agent itaikubali pia — lakini sahihi ni bila VITE_.)\n',
     );
     process.exit(1);
   }
