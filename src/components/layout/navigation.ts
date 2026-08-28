@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, ShoppingCart, Users, Package, Ticket, Send, Printer,
   Globe, MessageSquare, Router, Wifi, Network, UserCog, Megaphone,
-  MessageCircle, Wallet, UserCheck, FileBarChart, Settings, CreditCard,
+  MessageCircle, Wallet, UserCheck, FileBarChart, Settings, CreditCard, Radio,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -38,6 +38,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: 'Portal', to: '/portal', icon: Globe, permission: 'settings:manage' },
       { label: 'Chats', to: '/chats', icon: MessageSquare, permission: 'customer:view' },
       { label: 'My Routers', to: '/routers', icon: Router, permission: 'router:view' },
+      { label: 'Agent Connector', to: '/agent-connector', icon: Radio, permission: 'router:manage' },
       { label: 'Active Users', to: '/active-users', icon: Wifi, permission: 'router:view' },
     ],
   },

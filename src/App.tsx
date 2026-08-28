@@ -6,6 +6,7 @@ import { RegisterPage } from './modules/auth/pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { RoutersPage } from './modules/routers/pages/RoutersPage';
+import { AgentConnectorPage } from './modules/routers/pages/AgentConnectorPage';
 import { PackagesPage } from './modules/hotspot/pages/PackagesPage';
 import { VoucherHistoryPage } from './modules/vouchers/pages/VoucherHistoryPage';
 import { VoucherPrintingPage } from './modules/vouchers/pages/VoucherPrintingPage';
@@ -44,6 +45,7 @@ export function App() {
         <Route path="/portal" element={<PlaceholderPage title="Portal" />} />
         <Route path="/chats" element={<PlaceholderPage title="Chats" />} />
         <Route path="/routers" element={<RoutersPage />} />
+        <Route path="/agent-connector" element={<AgentConnectorPage />} />
         <Route path="/active-users" element={<ActiveUsersPage />} />
         <Route path="/pppoe/plans" element={<PppoePlansPage />} />
         <Route path="/pppoe/customers" element={<PppoeCustomersPage />} />
