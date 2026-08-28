@@ -110,6 +110,40 @@ export const routerService = {
       lastError: (r.last_error as string) ?? null,
     };
   },
+
+  // Queue a real 'identity' command for the agent and poll until it completes.
+  // This is a genuine end-to-end test: dashboard -> gateway -> agent -> MikroTik.
+  // Requires the agent to be running on the router's LAN.
+  async testConnection(routerId: string): Promise<{ ok: boolean; identity?: string; error?: string }> {
+    const companyId = await currentCompanyId();
+    const { data, error } = await supabase
+      .from('router_commands')
+      .insert({ company_id: companyId, router_id: routerId, command: 'identity' })
+      .select('id')
+      .single();
+    if (error) throw error;
+    const commandId = (data as { id: string }).id;
+
+    // Poll up to ~20s for the agent to pick it up and report back.
+    for (let i = 0; i < 20; i++) {
+      await new Promise((r) => setTimeout(r, 1000));
+      const { data: row } = await supabase
+        .from('router_commands')
+        .select('status, result, error')
+        .eq('id', commandId)
+        .maybeSingle();
+      const cmd = row as { status: string; result: unknown; error: string | null } | null;
+      if (!cmd) continue;
+      if (cmd.status === 'done') {
+        const name = (cmd.result as { name?: string } | null)?.name;
+        return { ok: true, identity: name };
+      }
+      if (cmd.status === 'failed' || cmd.status === 'timeout') {
+        return { ok: false, error: cmd.error ?? 'Imeshindwa' };
+      }
+    }
+    return { ok: false, error: 'Muda umeisha — je Agent inaendesha kwenye LAN?' };
+  },
 };
 
 async function currentCompanyId(): Promise<string> {

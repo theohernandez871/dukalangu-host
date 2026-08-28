@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { Plus, Router as RouterIcon, Pencil, Trash2, Wifi, WifiOff } from 'lucide-react';
+import { Plus, Router as RouterIcon, Pencil, Trash2, Wifi, WifiOff, Zap, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { RouterFormDialog } from '../components/RouterFormDialog';
 import { useRouters, useRouterMutations } from '../hooks/useRouters';
+import { routerService } from '../services/router.service';
 import type { Router, RouterStatus } from '../types';
+
+interface TestState { testing: boolean; result?: { ok: boolean; identity?: string; error?: string }; }
 
 const STATUS: Record<RouterStatus, { label: string; tone: 'green' | 'red' | 'amber' | 'slate' }> = {
   online: { label: 'Online', tone: 'green' },
@@ -19,9 +22,20 @@ export function RoutersPage() {
   const { remove } = useRouterMutations();
   const [dialog, setDialog] = useState(false);
   const [editing, setEditing] = useState<Router | null>(null);
+  const [tests, setTests] = useState<Record<string, TestState>>({});
 
   const openAdd = () => { setEditing(null); setDialog(true); };
   const openEdit = (r: Router) => { setEditing(r); setDialog(true); };
+
+  async function testConnection(id: string) {
+    setTests((t) => ({ ...t, [id]: { testing: true } }));
+    try {
+      const result = await routerService.testConnection(id);
+      setTests((t) => ({ ...t, [id]: { testing: false, result } }));
+    } catch (e) {
+      setTests((t) => ({ ...t, [id]: { testing: false, result: { ok: false, error: String((e as Error).message) } } }));
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -70,7 +84,25 @@ export function RoutersPage() {
                   <span>User: {r.username}</span>
                   {r.location && <span>· {r.location}</span>}
                 </div>
-                <div className="mt-4 flex gap-2 border-t border-surface-border pt-3">
+
+                {/* Test connection result */}
+                {tests[r.id]?.result && (
+                  <div className={`mt-3 rounded-xl px-3 py-2 text-sm ${tests[r.id].result!.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
+                    {tests[r.id].result!.ok
+                      ? `✓ Imeunganishwa${tests[r.id].result!.identity ? ` — ${tests[r.id].result!.identity}` : ''}`
+                      : `✗ ${tests[r.id].result!.error}`}
+                  </div>
+                )}
+
+                <button
+                  onClick={() => testConnection(r.id)}
+                  disabled={tests[r.id]?.testing}
+                  className="btn-ghost mt-3 w-full justify-center border border-brand-200 text-sm text-brand-600 hover:bg-brand-50"
+                >
+                  {tests[r.id]?.testing ? <><Loader2 className="h-4 w-4 animate-spin" /> Inajaribu...</> : <><Zap className="h-4 w-4" /> Test Connection</>}
+                </button>
+
+                <div className="mt-2 flex gap-2 border-t border-surface-border pt-3">
                   <button onClick={() => openEdit(r)} className="btn-ghost flex-1 text-sm"><Pencil className="h-4 w-4" /> Hariri</button>
                   <button
                     onClick={() => { if (confirm(`Futa ${r.name}?`)) remove.mutate(r.id); }}
