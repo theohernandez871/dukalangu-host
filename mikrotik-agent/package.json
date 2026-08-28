@@ -1,0 +1,20 @@
+{
+  "name": "hotspot-mikrotik-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "MikroTik LAN bridge agent for Hotspot Billing",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test:auth": "node dist/mikrotik/test-auth.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "node-routeros": "^1.6.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "typescript": "^5.6.3"
+  }
+}
