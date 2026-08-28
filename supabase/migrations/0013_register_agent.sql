@@ -3,13 +3,18 @@
 -- generated token ONCE. Only the sha256 hash is stored (token_hash); the plain
 -- token is never persisted, so it cannot leak from the database later.
 -- The caller must copy the token immediately (it can't be retrieved again).
+--
+-- NOTE: On Supabase, pgcrypto lives in the "extensions" schema, not "public".
+-- We install it there and include "extensions" in each function's search_path so
+-- gen_random_bytes()/digest() resolve. This fixes:
+--   ERROR: function gen_random_bytes(integer) does not exist
 -- =============================================================================
 
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 create or replace function public.register_agent(p_name text)
 returns text
-language plpgsql security definer set search_path = public
+language plpgsql security definer set search_path = public, extensions
 as $ra$
 declare
   _company uuid := public.current_company_id();
@@ -23,9 +28,9 @@ begin
     raise exception 'Huna ruhusa';
   end if;
 
-  -- 32-byte random token, hex-encoded.
-  _token := encode(gen_random_bytes(32), 'hex');
-  _hash := encode(digest(_token, 'sha256'), 'hex');
+  -- 32-byte random token, hex-encoded (pgcrypto, from extensions schema).
+  _token := encode(extensions.gen_random_bytes(32), 'hex');
+  _hash := encode(extensions.digest(_token, 'sha256'), 'hex');
 
   insert into public.router_agents (company_id, name, token_hash)
   values (_company, coalesce(nullif(trim(p_name), ''), 'Agent'), _hash);
